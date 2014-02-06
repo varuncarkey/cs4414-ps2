@@ -38,9 +38,14 @@ impl Shell {
             let cmd_line = line.trim().to_owned();
             let program = cmd_line.splitn(' ', 1).nth(0).expect("no program");
             
+            //print!("{:s}",rest);
             match program {
                 ""      =>  { continue; }
                 "exit"  =>  { return; }
+                "cd"    =>  {let rest = cmd_line.splitn(' ', 1).nth(1).expect("");
+                        
+                                return;}
+                "history" =>{return;}
                 _       =>  { self.run_cmdline(cmd_line); }
             }
         }
