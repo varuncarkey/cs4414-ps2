@@ -44,26 +44,26 @@ impl Shell {
                 "exit"  =>  { return; }
                 "cd"    =>  {
                                 let rest: ~str = cmd_line.splitn(' ',1).nth(1).expect("").to_owned();
-                                    match rest
-                                    {
-                                        _ => 
-                                        { 
-                                            let path = Path::new(rest);
-                                            if std::os::change_dir(&path)
-                                            {
-                                                print("WORKING");    
-                                            }
-                                            else
-                                            {
-                                                print("Directory Doesnt exist");
-                                            }
-                                            
-                                        },
+                                match rest
+                                {
+                                    _ => 
+                                    { 
+                                        let path = Path::new(rest);
+                                        if std::os::change_dir(&path)
+                                        {
+                                        }
+                                        else
+                                        {
+                                            print("Directory Doesnt exist");
+                                        }
+                                        
                                     }
-                              
-                                //print!("rest: {:s}",rest);
-                                //return;
-                            }
+                                    
+                                }
+                          
+                            //print!("rest: {:s}",rest);
+                            //return;
+                        }
                 "history" =>{return;}
                 _       =>  { self.run_cmdline(cmd_line); }
             }
@@ -73,10 +73,21 @@ impl Shell {
     fn run_cmdline(&mut self, cmd_line: &str) {
         let mut argv: ~[~str] =
             cmd_line.split(' ').filter_map(|x| if x != "" { Some(x.to_owned()) } else { None }).to_owned_vec();
-    
+        
         if argv.len() > 0 {
             let program: ~str = argv.remove(0);
-            self.run_cmd(program, argv);
+            
+            if argv.len()>0 && argv[argv.len()-1]==~"&"
+            {
+                let program2: ~str = program.clone();
+                let argv2: ~[~str] = argv.clone();
+                spawn(proc() 
+                {
+                let mut self2= Shell::new("");                
+                self2.run_cmd(program2, argv2);
+                });
+            }
+            else {self.run_cmd(program, argv);}
         }
     }
     
@@ -108,6 +119,7 @@ fn get_cmdline_from_args() -> Option<~str> {
     };
     
     if matches.opt_present("c") {
+        //print!("cmd_str {:s}",match matches.opt_str("c"));
         let cmd_str = match matches.opt_str("c") {
                                                 Some(cmd_str) => {cmd_str.to_owned()}, 
                                                 None => {~""}
