@@ -42,9 +42,28 @@ impl Shell {
             match program {
                 ""      =>  { continue; }
                 "exit"  =>  { return; }
-                "cd"    =>  {let rest = cmd_line.splitn(' ', 1).nth(1).expect("");
-                        
-                                return;}
+                "cd"    =>  {
+                                let rest: ~str = cmd_line.splitn(' ',1).nth(1).expect("").to_owned();
+                                    match rest
+                                    {
+                                        _ => 
+                                        { 
+                                            let path = Path::new(rest);
+                                            if std::os::change_dir(&path)
+                                            {
+                                                print("WORKING");    
+                                            }
+                                            else
+                                            {
+                                                print("Directory Doesnt exist");
+                                            }
+                                            
+                                        },
+                                    }
+                              
+                                //print!("rest: {:s}",rest);
+                                //return;
+                            }
                 "history" =>{return;}
                 _       =>  { self.run_cmdline(cmd_line); }
             }
