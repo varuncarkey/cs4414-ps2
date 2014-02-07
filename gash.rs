@@ -43,7 +43,7 @@ impl Shell {
                 ""      =>  { continue; }
                 "exit"  =>  { return; }
                 "cd"    =>  {let rest = cmd_line.splitn(' ', 1).nth(1).expect("");
-                        
+                                print("hello");
                                 return;}
                 "history" =>{return;}
                 _       =>  { self.run_cmdline(cmd_line); }
