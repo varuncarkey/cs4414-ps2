@@ -18,19 +18,30 @@ use extra::getopts;
 
 struct Shell {
     cmd_prompt: ~str,
+    cwd: Path,
 }
 
+
+
+
 impl Shell {
+
     fn new(prompt_str: &str) -> Shell {
         Shell {
             cmd_prompt: prompt_str.to_owned(),
+            cwd : os::getcwd(),
         }
     }
     
     fn run(&mut self) {
         let mut stdin = BufferedReader::new(stdin());
+        let mut history : ~[~str] = ~[];
+        
+        
+        //print!("{}/", os::getcwd().display());
         
         loop {
+            print!("{} : ", self.cwd.display());
             print(self.cmd_prompt);
             io::stdio::flush();
             
@@ -38,8 +49,13 @@ impl Shell {
             let cmd_line = line.trim().to_owned();
             let program = cmd_line.splitn(' ', 1).nth(0).expect("no program");
             
-            //print!("{:s}",rest);
+            history.push(line);
+            
+            
+            
+            //print!("{:s}",line);
             match program {
+            
                 ""      =>  { continue; }
                 "exit"  =>  { return; }
                 "cd"    =>  {
@@ -51,6 +67,7 @@ impl Shell {
                                         let path = Path::new(rest);
                                         if std::os::change_dir(&path)
                                         {
+                                            self.cwd = os::getcwd();
                                         }
                                         else
                                         {
@@ -64,7 +81,12 @@ impl Shell {
                             //print!("rest: {:s}",rest);
                             //return;
                         }
-                "history" =>{return;}
+                "history" =>{
+                                for i in range(0, history.len()) { 
+                                  print!("{:s}", history[i]);
+                                }   
+                            }
+                
                 _       =>  { self.run_cmdline(cmd_line); }
             }
         }
