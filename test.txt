@@ -107,7 +107,7 @@ impl Shell {
                         let f = match native::io::file::open(&argv[i+1].to_c_str(),
                                          Open, Write) {
                                                         Ok(f)  => f,
-                                                        Err(e) => fail!("{}",e.to_str())
+                                                        Err(f) => fail!("NOTHING WORKS")
                                                     };
                         let fd = f.fd();
                         let mut options =run::ProcessOptions::new();
@@ -124,13 +124,12 @@ impl Shell {
                     else if argv[i]==~"<"
                     {
                         println!("YA WE BE DOING IT {}",argv[i+1]);
-                        let mut f = match native::io::file::open(&argv[i+1].to_c_str(),
+                        let f = match native::io::file::open(&argv[i+1].to_c_str(),
                                          Open, Read) {
                                                         Ok(f)  => f,
-                                                        Err(e) => fail!("{}",e.to_str())
+                                                        Err(f) => fail!("NOTHING WORKS")
                                                     };
                         let fd = f.fd();
-                        print!("GOT HERE DID FD WORK {}",f.eof().to_str());
                         let mut options =run::ProcessOptions::new();
                         options.in_fd=Some(fd);
                         let mut newprocess=run::Process::new(program.to_owned(), argv.to_owned(),options).unwrap();
