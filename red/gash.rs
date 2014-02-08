@@ -20,30 +20,19 @@ use std::io::{Open, Read, Write,};
 use std::io::pipe::PipeStream;
 struct Shell {
     cmd_prompt: ~str,
-    cwd: Path,
 }
 
-
-
-
 impl Shell {
-
     fn new(prompt_str: &str) -> Shell {
         Shell {
             cmd_prompt: prompt_str.to_owned(),
-            cwd : os::getcwd(),
         }
     }
     
     fn run(&mut self) {
         let mut stdin = BufferedReader::new(stdin());
-        let mut history : ~[~str] = ~[];
-        
-        
-        //print!("{}/", os::getcwd().display());
         
         loop {
-            print!("{} : ", self.cwd.display());
             print(self.cmd_prompt);
             io::stdio::flush();
             
@@ -51,13 +40,8 @@ impl Shell {
             let cmd_line = line.trim().to_owned();
             let program = cmd_line.splitn(' ', 1).nth(0).expect("no program");
             
-            history.push(line);
-            
-            
-            
-            //print!("{:s}",line);
+            //print!("{:s}",rest);
             match program {
-            
                 ""      =>  { continue; }
                 "exit"  =>  { return; }
                 "cd"    =>  {
@@ -69,7 +53,6 @@ impl Shell {
                                         let path = Path::new(rest);
                                         if std::os::change_dir(&path)
                                         {
-                                            self.cwd = os::getcwd();
                                         }
                                         else
                                         {
@@ -83,12 +66,7 @@ impl Shell {
                             //print!("rest: {:s}",rest);
                             //return;
                         }
-                "history" =>{
-                                for i in range(0, history.len()) { 
-                                  print!("{:s}", history[i]);
-                                }   
-                            }
-                
+                "history" =>{return;}
                 _       =>  { self.run_cmdline(cmd_line); }
             }
         }
@@ -129,7 +107,7 @@ impl Shell {
                         let f = match native::io::file::open(&argv[i+1].to_c_str(),
                                          Open, Write) {
                                                         Ok(f)  => f,
-                                                        Err(e) => fail!("{}",e.to_str())
+                                                        Err(f) => fail!("NOTHING WORKS")
                                                     };
                         let fd = f.fd();
                         let mut options =run::ProcessOptions::new();
@@ -146,13 +124,12 @@ impl Shell {
                     else if argv[i]==~"<"
                     {
                         println!("YA WE BE DOING IT {}",argv[i+1]);
-                        let mut f = match native::io::file::open(&argv[i+1].to_c_str(),
+                        let f = match native::io::file::open(&argv[i+1].to_c_str(),
                                          Open, Read) {
                                                         Ok(f)  => f,
-                                                        Err(e) => fail!("{}",e.to_str())
+                                                        Err(f) => fail!("NOTHING WORKS")
                                                     };
                         let fd = f.fd();
-                        print!("GOT HERE DID FD WORK {}",f.eof().to_str());
                         let mut options =run::ProcessOptions::new();
                         options.in_fd=Some(fd);
                         let mut newprocess=run::Process::new(program.to_owned(), argv.to_owned(),options).unwrap();
