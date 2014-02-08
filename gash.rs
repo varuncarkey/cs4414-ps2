@@ -12,6 +12,7 @@
 extern mod extra;
 extern mod native;
 use std::{io, run, os};
+use std::io::File;
 use std::io::buffered::BufferedReader;
 use std::io::stdin;
 use extra::getopts;
@@ -123,17 +124,14 @@ impl Shell {
                     }
                     else if argv[i]==~"<"
                     {
-                        println!("YA WE BE DOING IT {}",argv[i+1]);
-                        let mut f = match native::io::file::open(&argv[i+1].to_c_str(),
-                                         Open, Read) {
-                                                        Ok(f)  => f,
-                                                        Err(e) => fail!("{}",e.to_str())
-                                                    };
-                        let fd = f.fd();
-                        print!("GOT HERE DID FD WORK {}",f.eof().to_str());
+                        println!("argsv {}",argv[i+1].clone());
+                        let path =Path::new(argv[i+1].clone());
+                        let mut file = File::open(&path);
+                        //print!("GOT HERE DID FD WORK {}",f.eof().to_str());
                         let mut options =run::ProcessOptions::new();
-                        options.in_fd=Some(fd);
+                        //options.in_fd=Some(fd);
                         let mut newprocess=run::Process::new(program.to_owned(), argv.to_owned(),options).unwrap();
+                        newprocess.input().write(file.read_to_end());
                         let over=newprocess.finish();
                         if over.success()
                         {
@@ -153,6 +151,7 @@ impl Shell {
     
     fn cmd_exists(&mut self, cmd_path: &str) -> bool {
         let ret = run::process_output("which", [cmd_path.to_owned()]);
+        println("HERE MAYBE");
         return ret.expect("exit code error.").status.success();
     }
 }
