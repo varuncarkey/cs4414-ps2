@@ -17,7 +17,7 @@ use std::io::buffered::BufferedReader;
 use std::io::stdin;
 use extra::getopts;
 use std::io::Writer;
-use std::io::{Open, Read, Write,};
+use std::io::{Open, Read, Write, ReadWrite, Append, Truncate};
 use std::io::signal::{Listener, Interrupt};
 use std::io::pipe::PipeStream;
 use std::str;
@@ -53,7 +53,23 @@ impl Shell {
                 }
             );
         let mut history : ~[~str] = ~[];
-        
+        if history.len()==0
+        {
+            let path=Path::new("history.txt");
+            let mut file=match File::open_mode(&path,Append,ReadWrite)
+            {
+                Some(s) => s,
+                None => File::create(&path).unwrap()
+
+            };
+            let total=file.read_to_str();
+            //println!("{}",total);
+            for temp in total.split('\n')
+            {
+                history.push(temp.to_str().to_owned());
+            }
+            
+        }
         
         //print!("{}/", os::getcwd().display());
         
@@ -67,8 +83,15 @@ impl Shell {
             let line = stdin.read_line().unwrap();
             let cmd_line = line.trim().to_owned();
             let program = cmd_line.splitn(' ', 1).nth(0).expect("no program");
+            /*if line==~""
+            {
+
+            }
+            else
+            {*/
+                history.push(line);
+            //}
             
-            history.push(line);
             
             
             
@@ -77,7 +100,20 @@ impl Shell {
             match program {
             
                 ""      =>  { continue; }
-                "exit"  =>  { unsafe{ std::libc::funcs::c95::stdlib::exit(0);} }
+                "exit"  =>  {   
+                                let path=Path::new("history.txt");
+                                let mut file=match File::open_mode(&path,Truncate,ReadWrite)
+                                {
+                                    Some(s) => s,
+                                    None => fail!("whoops! I'm sure this raised, anyways..")
+
+                                };
+                                for i in range(0,history.len())
+                                {
+                                    file.write_str(history[i]);
+                                }
+                                unsafe{ std::libc::funcs::c95::stdlib::exit(0);} 
+                            }
                 "cd"    =>  {
                                 let rest: ~str = cmd_line.splitn(' ',1).nth(1).expect("").to_owned();
                                 match rest
@@ -103,7 +139,8 @@ impl Shell {
                         }
                 "history" =>{
                                 for i in range(0, history.len()) { 
-                                  print!("{:s}", history[i]);
+                                    print!("{} ",(i+1));
+                                    println!("{:s}", history[i]);
                                 }   
                             }
                 
@@ -164,7 +201,8 @@ impl Shell {
                     }
                     else if argv[i]==~"<"
                     {
-                        argv.to_owned().remove(i);
+                        let argv2= argv.clone();
+                        argv2.to_owned().remove(i);
                         let f = match native::io::file::open(&argv[i+1].to_c_str(),
                                          Open, Read) {
                                                         Ok(f)  => f,
@@ -250,6 +288,7 @@ fn get_cmdline_from_args() -> Option<~str> {
 }
 
 fn main() {
+    
     let opt_cmd_line = get_cmdline_from_args();
     
 
