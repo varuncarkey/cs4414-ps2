@@ -184,9 +184,11 @@ impl Shell {
             {
                 if argv[i]==~"<"||argv[i]==~">" || argv[i]==~"|"
                 {
-                    println("HELOO pasedd here");
                     if argv[i]==~">"
                     {
+                        let mut argv2=argv.clone().to_owned();
+                        argv2.remove(0);
+                        argv2.remove(0);
                         let f = match native::io::file::open(&argv[i+1].to_c_str(),
                                          Open, Write) {
                                                         Ok(f)  => f,
@@ -195,49 +197,37 @@ impl Shell {
                         let fd = f.fd();
                         let mut options =run::ProcessOptions::new();
                         options.out_fd=Some(fd);
-                        let mut newprocess=run::Process::new(program.to_owned(), argv.to_owned(),options).unwrap();
-                        let over=newprocess.finish();
-                        
-                        if over.success()
-                        {
-                            process_done=true;
-                        }
-                        //f.close();
+                        options.in_fd=Some(0);
+                        options.err_fd=Some(2);
+                        run::Process::new(program.to_owned(), argv.to_owned(),options);
+                        process_done=true;
 
                     }
                     else if argv[i]==~"<"
                     {
-                        let argv2= argv.clone();
-                        argv2.to_owned().remove(i);
-                        let f = match native::io::file::open(&argv[i+1].to_c_str(),
+                        let mut argv2= argv.clone().to_owned();
+                        
+                        argv2.remove(0);
+                        argv2.remove(0);
+                        
+                        let filename=self.cwd.as_str().unwrap().to_owned()+"/"+argv[i+1];
+                        println!("FILENAME: {}",filename);
+                        let f = match native::io::file::open(&filename.to_c_str(),
                                          Open, Read) {
                                                         Ok(f)  => f,
                                                         Err(e) => fail!("{}",e.to_str())
                                                     };
 
                         let fd=f.fd();
-                        /*let filename= argv[i+1].clone();
-                        let path = Path::new(filename);
-                        let mut file = File::open(&path);
-                        let mut readin: ~[u8] = file.read_to_end();*/
 
                         let mut options =run::ProcessOptions::new();
                         options.in_fd =Some(fd);
+                        options.out_fd=Some(1);
+                        options.err_fd=Some(2);
                         
-                        let mut newprocess=run::Process::new(program.to_owned(), argv.to_owned(),options).unwrap();
-                        //newprocess.input().write(readin);
-                        let over=newprocess.finish_with_output();
-                        //println!("{:s}",newprocess.output().);
-                        println!("{:s}",str::from_utf8(over.output));
+                        run::Process::new(program.to_owned(), argv2.to_owned(),options);
+                        process_done=true;
                         
-                        
-                        //if over.status.success()
-                        //{
-                            process_done=true;
-                            //newprocess.destroy();
-                        //}
-                        //println("YOOONEFNOENOFHEO");
-
                     }
                     
                     else if argv[i]==~"|"
@@ -250,12 +240,11 @@ impl Shell {
                         newprocess.input().write(output);
 
                     }
-                    println("YO?"); 
+                   
                 }
-                 println("YOAGAIN?"); 
+                
             }
 
-            print("HELLO?");
             if !process_done
                 {run::process_status(program, argv);}
 

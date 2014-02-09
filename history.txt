@@ -10,3 +10,89 @@ clear
 
 exit
 
+
+./stdin < test.txt
+
+cat < test.txt > out.txt
+
+cat out.txt
+
+exit
+
+
+exit
+
+
+sort < test.txt
+
+exit
+
+
+sort < test.txt
+
+exit
+
+
+sort test.txt
+
+exit
+
+
+sort test.txt
+
+sort < test.txt
+
+exit
+
+
+sort < test.txt
+
+sort < test.txt
+
+sort test.txt
+
+exit
+
+
+sort < test.txt
+
+exit
+
+
+sort < test.txt
+
+sort test.txt
+
+exit
+
+
+sort < test.txt
+
+[A[A[B[Bexit
+
+exit
+
+
+sort < test.txt
+
+sort test.txt
+
+exit
+
+
+clear
+
+sort < test.txt
+
+exit
+
+
+sort < test.txt
+
+exit
+
+
+sort < test.txt
+
+exit
+
