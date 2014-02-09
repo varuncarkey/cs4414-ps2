@@ -17,8 +17,11 @@ use std::io::buffered::BufferedReader;
 use std::io::stdin;
 use extra::getopts;
 use std::io::Writer;
-use std::io::{Open, Read, Write,};
+use std::io::{Open, Read, Write, ReadWrite, Append, Truncate};
+use std::io::signal::{Listener, Interrupt};
 use std::io::pipe::PipeStream;
+use std::str;
+
 struct Shell {
     cmd_prompt: ~str,
     cwd: Path,
@@ -38,12 +41,41 @@ impl Shell {
     
     fn run(&mut self) {
         let mut stdin = BufferedReader::new(stdin());
+        spawn(proc(){
+                    let mut listener = Listener::new();
+                    listener.register(Interrupt);
+                    loop{
+                        match listener.port.recv() {
+                            Interrupt => println!("Got Interrupt'ed"),
+                            _ => (),
+                        }
+                    }
+                }
+            );
         let mut history : ~[~str] = ~[];
-        
+        if history.len()==0
+        {
+            let path=Path::new("history.txt");
+            let mut file=match File::open_mode(&path,Append,ReadWrite)
+            {
+                Some(s) => s,
+                None => File::create(&path).unwrap()
+
+            };
+            let total=file.read_to_str();
+            //println!("{}",total);
+            for temp in total.split('\n')
+            {
+                history.push(temp.to_str().to_owned());
+            }
+            
+        }
         
         //print!("{}/", os::getcwd().display());
         
         loop {
+
+
             print!("{} : ", self.cwd.display());
             print(self.cmd_prompt);
             io::stdio::flush();
@@ -51,16 +83,37 @@ impl Shell {
             let line = stdin.read_line().unwrap();
             let cmd_line = line.trim().to_owned();
             let program = cmd_line.splitn(' ', 1).nth(0).expect("no program");
+            /*if line==~""
+            {
+
+            }
+            else
+            {*/
+                history.push(line);
+            //}
             
-            history.push(line);
             
             
             
             //print!("{:s}",line);
+        //if !done    
             match program {
             
                 ""      =>  { continue; }
-                "exit"  =>  { return; }
+                "exit"  =>  {   
+                                let path=Path::new("history.txt");
+                                let mut file=match File::open_mode(&path,Truncate,ReadWrite)
+                                {
+                                    Some(s) => s,
+                                    None => fail!("whoops! I'm sure this raised, anyways..")
+
+                                };
+                                for i in range(0,history.len())
+                                {
+                                    file.write_str(history[i]);
+                                }
+                                unsafe{ std::libc::funcs::c95::stdlib::exit(0);} 
+                            }
                 "cd"    =>  {
 
                             if cmd_line.splitn(' ',1).len() > 1 {
@@ -92,7 +145,8 @@ impl Shell {
                         }
                 "history" =>{
                                 for i in range(0, history.len()) { 
-                                  print!("{:s}", history[i]);
+                                    print!("{} ",(i+1));
+                                    println!("{:s}", history[i]);
                                 }   
                             }
                 
@@ -123,14 +177,14 @@ impl Shell {
     }
     
     fn run_cmd(&mut self, program: &str, argv: &[~str]) {
-        //println("CAME HERE");
-       // let mut process:(std::option::Option<std::run::Process>)=None;
+
         if self.cmd_exists(program) {
            let mut process_done=false;
            for i in range(0,argv.len())
             {
                 if argv[i]==~"<"||argv[i]==~">" || argv[i]==~"|"
                 {
+                    println("HELOO pasedd here");
                     if argv[i]==~">"
                     {
                         let f = match native::io::file::open(&argv[i+1].to_c_str(),
@@ -143,6 +197,7 @@ impl Shell {
                         options.out_fd=Some(fd);
                         let mut newprocess=run::Process::new(program.to_owned(), argv.to_owned(),options).unwrap();
                         let over=newprocess.finish();
+                        
                         if over.success()
                         {
                             process_done=true;
@@ -152,23 +207,55 @@ impl Shell {
                     }
                     else if argv[i]==~"<"
                     {
-                        println!("argsv {}",argv[i+1].clone());
-                        let path =Path::new(argv[i+1].clone());
+                        let argv2= argv.clone();
+                        argv2.to_owned().remove(i);
+                        let f = match native::io::file::open(&argv[i+1].to_c_str(),
+                                         Open, Read) {
+                                                        Ok(f)  => f,
+                                                        Err(e) => fail!("{}",e.to_str())
+                                                    };
+
+                        let fd=f.fd();
+                        /*let filename= argv[i+1].clone();
+                        let path = Path::new(filename);
                         let mut file = File::open(&path);
-                        //print!("GOT HERE DID FD WORK {}",f.eof().to_str());
+                        let mut readin: ~[u8] = file.read_to_end();*/
+
                         let mut options =run::ProcessOptions::new();
-                        //options.in_fd=Some(fd);
+                        options.in_fd =Some(fd);
+                        
                         let mut newprocess=run::Process::new(program.to_owned(), argv.to_owned(),options).unwrap();
-                        newprocess.input().write(file.read_to_end());
-                        let over=newprocess.finish();
-                        if over.success()
+                        //newprocess.input().write(readin);
+                        let over=newprocess.finish_with_output();
+                        //println!("{:s}",newprocess.output().);
+                        println!("{:s}",str::from_utf8(over.output));
+                        
+                        
+                        if over.status.success()
                         {
                             process_done=true;
+                            newprocess.destroy();
                         }
+                        println("YOOONEFNOENOFHEO");
 
                     }
+                    
+                    else if argv[i]==~"|"
+                    {
+                        let mut options =run::ProcessOptions::new();
+                        let mut newprocess=run::Process::new(program.to_owned(), argv.to_owned(),options).unwrap();
+                        let output=newprocess.finish_with_output().output;
+                        let mut options2 =run::ProcessOptions::new();
+                        let mut newprocess2=run::Process::new(program.to_owned(), argv.to_owned(), options2).unwrap();
+                        newprocess.input().write(output);
+
+                    }
+                    println("YO?"); 
                 }
+                 println("YOAGAIN?"); 
             }
+
+            print("HELLO?");
             if !process_done
                 {run::process_status(program, argv);}
 
@@ -179,7 +266,6 @@ impl Shell {
     
     fn cmd_exists(&mut self, cmd_path: &str) -> bool {
         let ret = run::process_output("which", [cmd_path.to_owned()]);
-        println("HERE MAYBE");
         return ret.expect("exit code error.").status.success();
     }
 }
@@ -208,8 +294,10 @@ fn get_cmdline_from_args() -> Option<~str> {
 }
 
 fn main() {
+    
     let opt_cmd_line = get_cmdline_from_args();
     
+
     match opt_cmd_line {
         Some(cmd_line) => Shell::new("").run_cmdline(cmd_line),
         None           => Shell::new("gash > ").run()
