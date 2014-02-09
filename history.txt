@@ -1,0 +1,12 @@
+lscat hist	lsyedjf ewfew historyhistoryexithistoryexitexit
+
+cat < license
+
+cat < license > test.txt
+
+cat test.txt
+
+clear
+
+exit
+

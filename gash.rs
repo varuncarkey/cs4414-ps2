@@ -110,7 +110,7 @@ impl Shell {
                                 };
                                 for i in range(0,history.len())
                                 {
-                                    file.write_str(history[i]);
+                                    file.write_line(history[i]);
                                 }
                                 unsafe{ std::libc::funcs::c95::stdlib::exit(0);} 
                             }
@@ -225,12 +225,12 @@ impl Shell {
                         println!("{:s}",str::from_utf8(over.output));
                         
                         
-                        if over.status.success()
-                        {
+                        //if over.status.success()
+                        //{
                             process_done=true;
-                            newprocess.destroy();
-                        }
-                        println("YOOONEFNOENOFHEO");
+                            //newprocess.destroy();
+                        //}
+                        //println("YOOONEFNOENOFHEO");
 
                     }
                     
@@ -257,7 +257,10 @@ impl Shell {
             println!("{:s}: command not found", program);
         }
     }
+    fn multiloop()
+    {
     
+    }
     fn cmd_exists(&mut self, cmd_path: &str) -> bool {
         let ret = run::process_output("which", [cmd_path.to_owned()]);
         return ret.expect("exit code error.").status.success();
