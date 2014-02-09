@@ -115,24 +115,30 @@ impl Shell {
                                 unsafe{ std::libc::funcs::c95::stdlib::exit(0);} 
                             }
                 "cd"    =>  {
+
+                            if cmd_line.splitn(' ',1).len() > 1 {
                                 let rest: ~str = cmd_line.splitn(' ',1).nth(1).expect("").to_owned();
                                 match rest
                                 {
                                     _ => 
-                                    { 
-                                        let path = Path::new(rest);
-                                        if std::os::change_dir(&path)
-                                        {
-                                            self.cwd = os::getcwd();
-                                        }
-                                        else
-                                        {
-                                            println("Directory Doesnt exist");
-                                        }
+                                    {
+                                            let path = Path::new(rest);
+                                            if std::os::change_dir(&path)
+                                            {
+                                                self.cwd = os::getcwd();
+                                            }
+                                            else
+                                            {
+                                                println("Directory Doesnt exist");
+                                            }
                                         
                                     }
                                     
                                 }
+                                
+                            } else {
+                            println("No directory was specified");
+                            }
                           
                             //print!("rest: {:s}",rest);
                             //return;
