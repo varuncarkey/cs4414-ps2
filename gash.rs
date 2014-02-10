@@ -187,7 +187,7 @@ impl Shell {
                 {
                 
                 process_done = true;
-                    /*if argv[i]==~">"
+                    if argv[i]==~">"
                     {
                         let mut argv2=argv.clone().to_owned();
                         argv2.remove(0);
@@ -232,17 +232,7 @@ impl Shell {
                         process_done=true;
                         
                     }
-                    
-                    else if argv[i]==~"|"
-                    {
-                        let mut options =run::ProcessOptions::new();
-                        let mut newprocess=run::Process::new(program.to_owned(), argv.to_owned(),options).unwrap();
-                        let output=newprocess.finish_with_output().output;
-                        let mut options2 =run::ProcessOptions::new();
-                        let mut newprocess2=run::Process::new(program.to_owned(), argv.to_owned(), options2).unwrap();
-                        newprocess.input().write(output);
 
-                    }*/
                     
                     
                     
@@ -300,20 +290,7 @@ impl Shell {
                             newVec.push(argv[j].clone());
                         }
                         return self.multiCulturalloop(Some(prg), Some(~""), newVec);
-                        
-                        
-                        //let mut d = File::create(&Path::new(".outfile2.md"));
-                        //d.write(outputNew);
-                        
-                        //run::process_status("rm", [~".outfile.md"]);
-                        
-                        //let fname = ".outfile.md";
-                        //let mut file = File::create(&Path::new(".outfile.md"));
-                        //file.write(outputNew);
-                        
-                        //let outputNew=newProcess.output().read_to_end();
-                        //print!("FIRST {}",output.to_str());
-                        
+
                       }
                       else
                       {
@@ -339,7 +316,6 @@ impl Shell {
                         
                         let mut oldProcess= run::Process::new(prgm.to_owned(),vec,options).unwrap();
                         let outputNew = oldProcess.finish_with_output().output;
-                        println!("OUTPUt : {}",outputNew.to_str());
                         
                         run::process_status("rm", [~".outfile.md"]);
                         let path=Path::new(".outfile.md");
@@ -365,7 +341,6 @@ impl Shell {
                         
                     }
             }
-            println!("prgm: {}",prgm);
             let filename=".outfile.md";
                 let f = match native::io::file::open(&filename.to_c_str(),
                                          Open, Read) {
@@ -381,6 +356,8 @@ impl Shell {
                 let mut newProcess = run::Process::new(prgm.to_owned(), argv,options).unwrap();
                 
                 let outputNew=(newProcess.finish_with_output().output);//std::str::from_utf8(newProcess.output().read_to_end()).to_owned();
+                run::process_status("rm", [~".outfile.md"]);
+                        
                 return;
             
             }
