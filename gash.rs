@@ -237,6 +237,7 @@ impl Shell {
                     {
                         pipe_done=true;
                         process_done=true;
+                        
                     }
 
                     
