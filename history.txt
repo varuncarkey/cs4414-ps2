@@ -96,3 +96,63 @@ sort < test.txt
 
 exit
 
+
+history
+
+ifconfig | grep Link | sort | tail -1
+
+clear
+
+exit
+
+
+ifconfig | grep options | sort | tail -1
+
+ifconfig
+
+ifconfig | grep options
+
+ifconfig | grep options | sort
+
+ifconfig | grep options | sort | tail -1
+
+ifconfig | tail -1
+
+[Aexit
+
+exit
+
+
+ifconfig | grep options | sort | tail -1
+
+exit
+
+
+ifconfig | grep options | sort
+
+exit
+
+
+ifconfig | grep options | sort
+
+ls
+
+cat outfile.md
+
+exit
+
+
+ifconfig | grep options | sort
+
+cat .outfile.md
+
+cat .outfile2.md
+
+sort < .outfile2.md
+
+ifconfig | grep options | tail -1
+
+cat .outfile2.md
+
+exit
+
