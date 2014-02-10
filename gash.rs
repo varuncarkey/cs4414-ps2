@@ -181,12 +181,13 @@ impl Shell {
 
         if self.cmd_exists(program) {
            let mut process_done=false;
+           let mut pipe_done=false;
            for i in range(0,argv.len())
             {
                 if argv[i]==~"<"||argv[i]==~">" || argv[i]==~"|"
                 {
                 
-                process_done = true;
+                //process_done = true;
                     if argv[i]==~">"
                     {
                         let mut argv2=argv.clone().to_owned();
@@ -232,6 +233,11 @@ impl Shell {
                         process_done=true;
                         
                     }
+                    else if argv[i]==~"|"
+                    {
+                        pipe_done=true;
+                        process_done=true;
+                    }
 
                     
                     
@@ -241,7 +247,7 @@ impl Shell {
                 
             }
             
-            if process_done{
+            if pipe_done{
 
                 self.multiCulturalloop(Some(program.to_owned()), None, argv.to_owned());
             }
